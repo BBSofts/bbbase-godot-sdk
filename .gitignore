@@ -1,0 +1,8 @@
+# Godot
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# BBBase — API 키가 든 설정은 커밋하지 않음(키 로테이션 용이)
+bbbase_settings.tres
