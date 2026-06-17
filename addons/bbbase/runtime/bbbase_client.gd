@@ -24,7 +24,7 @@ func _log(msg: String) -> void:
 
 ## 프로젝트 스코프 경로(/projects/{pid}{sub_path}) 로 요청.
 func send_project(method: String, sub_path: String, body: Variant = null, with_user_token := false) -> BBBaseResult:
-	var path := "/projects/%s%s" % [_settings.project_id, sub_path]
+	var path := "/projects/%s%s" % [_settings.active_project_id(), sub_path]
 	return await send(method, path, body, with_user_token)
 
 
@@ -36,7 +36,7 @@ func send(method: String, path: String, body: Variant = null, with_user_token :=
 		http.timeout = _settings.request_timeout_seconds
 
 	var headers := PackedStringArray()
-	headers.append("X-API-Key: " + _settings.api_key)
+	headers.append("X-API-Key: " + _settings.active_api_key())
 	headers.append("Content-Type: application/json")
 	if with_user_token and access_token != "":
 		headers.append("Authorization: Bearer " + access_token)

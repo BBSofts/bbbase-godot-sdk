@@ -61,4 +61,4 @@ func init_with(s: BBBaseSettings) -> void:
 	leaderboards = BBBaseLeaderboards.new(_client)
 
 	if s.verbose_logging:
-		print("[BBBase] initialized. project=%s, restoredSession=%s" % [s.project_id, _session.is_logged_in()])
+		print("[BBBase] initialized. env=%s, project=%s, restoredSession=%s" % [s.active_environment_name(), s.active_project_id(), _session.is_logged_in()])
