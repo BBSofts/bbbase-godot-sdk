@@ -16,12 +16,12 @@ const RESOURCE_PATH := "res://bbbase_settings.tres"
 ## 활성 환경 선택.
 ##  - AUTO: 디버그 빌드/에디터면 개발용, 릴리스 export 면 라이브용 (OS.is_debug_build()).
 ##  - DEVELOPMENT / PRODUCTION: 빌드 종류와 무관하게 강제 고정.
-enum Environment { AUTO, DEVELOPMENT, PRODUCTION }
+enum BBBaseEnvironment { AUTO, DEVELOPMENT, PRODUCTION }
 
 ## 개발용·라이브용 프로젝트가 공유하는 BBBase API 서버. 보통 그대로 둔다.
 @export var base_url: String = "https://api.bbbase.io"
 
-@export var environment: Environment = Environment.AUTO
+@export var environment: BBBaseEnvironment = BBBaseEnvironment.AUTO
 
 @export_group("개발용 프로젝트")
 @export var dev_project_id: String = ""
@@ -57,9 +57,9 @@ static func load_from_project() -> BBBaseSettings:
 ## 현재 활성 환경이 라이브(운영)인지.
 func is_production() -> bool:
 	match environment:
-		Environment.DEVELOPMENT:
+		BBBaseEnvironment.DEVELOPMENT:
 			return false
-		Environment.PRODUCTION:
+		BBBaseEnvironment.PRODUCTION:
 			return true
 		_:
 			return not OS.is_debug_build()
