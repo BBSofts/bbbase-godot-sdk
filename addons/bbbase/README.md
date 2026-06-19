@@ -33,6 +33,10 @@ func _ready() -> void:
     var top := await BBBase.leaderboards.get_top_entries("LB_ID", 10)
     for row in top.data:
         print("#%s %s %s" % [row.get("rank"), row.get("entityId"), row.get("score")])
+
+    # 리그(티어 승격/강등): league_points 저장이 곧 점수 반영
+    await BBBase.records.save_mine({ "league_points": 250 })
+    var st := await BBBase.leagues.get_my_status_mine("LEAGUE_ID")   # st.data.tier / rank / score
 ```
 
 전체 예제는 `addons/bbbase/samples/quickstart.gd` 참고.
