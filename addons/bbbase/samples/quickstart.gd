@@ -18,6 +18,11 @@ func _run() -> void:
 		push_error("초기화 실패 — bbbase_settings.tres 를 확인하세요.")
 		return
 
+	# 0) 세션 만료 구독(선택이지만 권장). 액세스 토큰 만료(1시간)는 SDK 가 자동으로
+	#    refresh 하므로 게임이 신경 쓸 필요 없다. 리프레시 토큰까지 만료돼(오래 미접속)
+	#    자동 복구가 불가능할 때만 이 시그널이 오며, 이때 provider 별 재로그인을 띄운다.
+	BBBase.session_expired.connect(_on_session_expired)
+
 	# 1) 게스트 로그인
 	var login := await BBBase.auth.login_guest()
 	if not login.ok:
@@ -44,3 +49,16 @@ func _run() -> void:
 	#         print("  #%s  %s  %s" % [row.get("rank"), row.get("entityId"), row.get("score")])
 
 	print("🎉 왕복 완료")
+
+
+## 세션이 완전히 만료돼 자동 복구가 불가능할 때 호출된다(재로그인 필요).
+## provider 로 어떤 로그인 UI 를 띄울지 분기한다.
+func _on_session_expired(provider: String) -> void:
+	push_warning("세션 만료 — 재로그인이 필요합니다 (provider=%s)" % provider)
+	match provider:
+		"google":
+			pass  # 구글 로그인 UI → 새 idToken 획득 후 BBBase.auth.login_google(id_token)
+		"apps-in-toss":
+			pass  # 앱인토스 재인증 → BBBase.auth.login_apps_in_toss(code)
+		_:
+			await BBBase.auth.login_guest()  # 게스트: 같은 deviceId 로 같은 계정 복구

@@ -65,6 +65,16 @@ func refresh() -> BBBaseResult:
 	return res
 
 
+## 액세스·리프레시 토큰이 모두 만료돼 자동 복구가 불가능할 때 클라이언트가 호출한다.
+## 로컬 세션(디스크 포함)을 정리하고, 정리 직전의 provider 를 돌려줘 재로그인 UI 분기에 쓰게 한다.
+## (서버 refresh 토큰은 이미 만료/폐기 상태이므로 서버 호출은 하지 않는다.)
+func handle_session_expired() -> String:
+	var prov := _session.provider
+	_session.clear()
+	_client.access_token = ""
+	return prov
+
+
 ## 로그아웃 — 서버에 refresh 토큰 무효화 요청 후 로컬 세션 삭제.
 ## 로컬 정리는 항상 성공으로 간주(서버 실패는 무시).
 func logout() -> BBBaseResult:

@@ -11,6 +11,11 @@ extends Node
 ## var top := await BBBase.leaderboards.get_top_entries("LEADERBOARD_ID", 10)
 ## [/codeblock]
 
+## 액세스·리프레시 토큰이 모두 만료돼 SDK 가 세션을 자동 정리했을 때 방출.
+## 게임은 이 시그널만 구독해 provider 별 재로그인 UI 를 띄우면 된다("guest"/"google"/...).
+## 평소 401(액세스 토큰 만료)은 SDK 가 조용히 refresh 하므로 게임이 신경 쓸 필요 없다.
+signal session_expired(provider: String)
+
 var settings: BBBaseSettings
 var auth: BBBaseAuth
 var records: BBBaseRecords
@@ -61,6 +66,9 @@ func init_with(s: BBBaseSettings) -> void:
 	_client.setup(s)
 	add_child(_client)
 	auth = BBBaseAuth.new(_client, _session)
+	# 401 자동 refresh 를 위해 client 에 auth 주입 + 세션 만료 시그널 중계
+	_client.set_auth(auth)
+	_client.session_expired.connect(func(p: String) -> void: session_expired.emit(p))
 	records = BBBaseRecords.new(_client, _session)
 	leaderboards = BBBaseLeaderboards.new(_client)
 	leagues = BBBaseLeagues.new(_client, _session)
