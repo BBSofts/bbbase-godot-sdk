@@ -82,7 +82,7 @@ func _refresh_once() -> bool:
 	if not ok:
 		# refresh 실패 = 리프레시 토큰도 만료/폐기 → 세션 정리 + 재로그인 신호
 		_log("refresh 실패 → 세션 만료 처리")
-		var prov := _auth.handle_session_expired()
+		var prov: String = _auth.handle_session_expired()
 		session_expired.emit(prov)
 	_refreshing = false
 	_refresh_done.emit(ok)
