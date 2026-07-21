@@ -13,6 +13,8 @@ extends Node
 
 ## 액세스·리프레시 토큰이 모두 만료돼 SDK 가 세션을 자동 정리했을 때 방출.
 ## 게임은 이 시그널만 구독해 provider 별 재로그인 UI 를 띄우면 된다("guest"/"google"/...).
+## provider 가 ""(빈 문자열)이면 로그인 수단 불명이므로 특정 방식으로 자동 로그인하지 말고
+## 사용자에게 로그인 수단 선택 UI 를 보여줄 것(잘못된 계정으로의 조용한 전환 방지).
 ## 평소 401(액세스 토큰 만료)은 SDK 가 조용히 refresh 하므로 게임이 신경 쓸 필요 없다.
 signal session_expired(provider: String)
 
