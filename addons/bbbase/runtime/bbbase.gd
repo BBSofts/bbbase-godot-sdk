@@ -18,6 +18,18 @@ extends Node
 ## 평소 401(액세스 토큰 만료)은 SDK 가 조용히 refresh 하므로 게임이 신경 쓸 필요 없다.
 signal session_expired(provider: String)
 
+## 운영자가 이 계정을 제재했을 때 방출(서버 403 USER_BANNED). expires_at 이 ""면 영구 제재.
+## 게임은 이 시그널을 구독해 플레이를 중단하고 정지 안내를 띄운다 — 서버는 이미 모든 요청을
+## 거절하고 있으므로 데이터는 안전하고, 화면 처리만 게임의 몫이다.
+##
+## [codeblock]
+## BBBase.banned.connect(func(expires_at: String, reason: String) -> void:
+##     get_tree().paused = true
+##     $BanPopup.show_ban(expires_at, reason)  # expires_at == "" → 영구
+## )
+## [/codeblock]
+signal banned(expires_at: String, reason: String)
+
 var settings: BBBaseSettings
 var auth: BBBaseAuth
 var records: BBBaseRecords
@@ -71,6 +83,7 @@ func init_with(s: BBBaseSettings) -> void:
 	# 401 자동 refresh 를 위해 client 에 auth 주입 + 세션 만료 시그널 중계
 	_client.set_auth(auth)
 	_client.session_expired.connect(func(p: String) -> void: session_expired.emit(p))
+	_client.banned.connect(func(exp: String, rsn: String) -> void: banned.emit(exp, rsn))
 	records = BBBaseRecords.new(_client, _session)
 	leaderboards = BBBaseLeaderboards.new(_client)
 	leagues = BBBaseLeagues.new(_client, _session)

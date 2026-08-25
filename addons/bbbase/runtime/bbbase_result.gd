@@ -19,6 +19,10 @@ var ok: bool = false
 var data: Variant = null
 var error_code: String = ""
 var error_message: String = ""
+## 서버가 error.details 로 실어보낸 부가 정보(없으면 빈 Dictionary).
+## 예) USER_BANNED → {"expiresAt": "2026-08-27T...Z" 또는 null, "reason": "..."}
+##     IDENTITY_ALREADY_LINKED → {"conflictUserId": "...", "conflictLastLoginAt": "..."}
+var error_details: Dictionary = {}
 ## HTTP 상태코드. 클라이언트 합성 에러(네트워크 등)는 0.
 var status: int = 0
 var is_network_error: bool = false
@@ -35,7 +39,7 @@ static func success(p_data: Variant, p_status: int = 200, p_raw: String = "") ->
 	return r
 
 
-static func failure(p_code: String, p_message: String, p_status: int = 0, p_network := false, p_raw := "") -> BBBaseResult:
+static func failure(p_code: String, p_message: String, p_status: int = 0, p_network := false, p_raw := "", p_details: Dictionary = {}) -> BBBaseResult:
 	var r := BBBaseResult.new()
 	r.ok = false
 	r.error_code = p_code
@@ -43,6 +47,7 @@ static func failure(p_code: String, p_message: String, p_status: int = 0, p_netw
 	r.status = p_status
 	r.is_network_error = p_network
 	r.raw_body = p_raw
+	r.error_details = p_details
 	return r
 
 

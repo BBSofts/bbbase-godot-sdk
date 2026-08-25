@@ -13,9 +13,29 @@ signal request_failed(result: BBBaseResult)
 ## 보통은 BBBase 파사드의 동명 시그널로 중계돼 게임이 그쪽을 구독한다.
 signal session_expired(provider: String)
 
+## 운영자가 이 계정을 제재해 서버가 403 USER_BANNED 로 거절했을 때 1회 방출.
+## expires_at 은 ISO 8601 문자열이며 ""(빈 문자열)이면 영구 제재. reason 은 운영자 메모("" 가능).
+##
+## 게임은 이 시그널을 받으면 플레이를 중단하고 정지 안내 화면을 띄워야 한다 — 제재 집행 자체는
+## 서버가 하므로(요청이 전부 403) 저장·랭킹·보상은 이미 막혀 있고, 화면 전환은 게임의 몫이다.
+##
+## SDK 는 토큰을 지우지 않는다: 서버가 제재 중에도 auth/me 는 열어두므로(계정 상태 조회용)
+## 세션을 지우면 그 조회 경로까지 막힌다. 또 기간제 제재가 풀렸을 때 재로그인 없이 복구돼야 한다.
+signal banned(expires_at: String, reason: String)
+
 var _settings: BBBaseSettings
 ## 로그인 후 채워지는 게임유저 토큰(레코드 호출 시 Bearer 로 붙음).
-var access_token: String = ""
+## 새 토큰이 들어오면(=로그인 성공) 제재 래치를 푼다 — 기간제 제재가 만료된 뒤 다시
+## 로그인하면 같은 세션에서 banned 를 또 받을 수 있어야 하기 때문.
+var access_token: String = "":
+	set(value):
+		access_token = value
+		if value != "":
+			_banned_emitted = false
+
+## banned 시그널 중복 방출 방지. 게임이 동시에 여러 요청을 날리면 403 이 여러 번 오는데,
+## 정지 안내 팝업이 그만큼 뜨면 안 된다(401 refresh single-flight 와 같은 취지).
+var _banned_emitted := false
 ## 401 자동 refresh 를 위임할 인증 객체(BBBaseAuth). init 후 주입된다.
 ## 순환 생성을 피하려 생성자 대신 setter 로 늦게 연결한다.
 var _auth = null
@@ -133,11 +153,14 @@ func _send_once(method: String, path: String, body: Variant = null, with_user_to
 	if status_code >= 400 or success_false:
 		var code := "HTTP_%d" % status_code
 		var msg := "요청 실패 (%d)" % status_code
+		var details: Dictionary = {}
 		if parsed is Dictionary and parsed.get("error") is Dictionary:
 			var e: Dictionary = parsed["error"]
 			code = e.get("code", code)
 			msg = e.get("message", msg)
-		return _fail(BBBaseResult.failure(code, msg, status_code, false, raw))
+			if e.get("details") is Dictionary:
+				details = e["details"]
+		return _fail(BBBaseResult.failure(code, msg, status_code, false, raw, details))
 
 	# ── 성공 ──
 	if parsed is Dictionary:
@@ -147,6 +170,17 @@ func _send_once(method: String, path: String, body: Variant = null, with_user_to
 
 
 func _fail(res: BBBaseResult) -> BBBaseResult:
+	if res.error_code == BBBaseErrorCodes.USER_BANNED and not _banned_emitted:
+		_banned_emitted = true
+		var exp: String = ""
+		var rsn: String = ""
+		# details.expiresAt 은 영구 제재면 JSON null 로 온다 → "" 로 정규화.
+		if res.error_details.get("expiresAt") is String:
+			exp = res.error_details["expiresAt"]
+		if res.error_details.get("reason") is String:
+			rsn = res.error_details["reason"]
+		_log("USER_BANNED 수신 → banned 방출 (expires_at=%s)" % ("영구" if exp == "" else exp))
+		banned.emit(exp, rsn)
 	request_failed.emit(res)
 	return res
 

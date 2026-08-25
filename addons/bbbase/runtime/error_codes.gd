@@ -19,4 +19,7 @@ const TOO_MANY_REQUESTS := "TOO_MANY_REQUESTS"
 const LEADERBOARD_SCORE_NOT_FOUND := "LEADERBOARD_SCORE_NOT_FOUND"
 const UNAUTHORIZED := "UNAUTHORIZED"
 const FORBIDDEN := "FORBIDDEN"
+## 운영자가 제재한 계정. 재시도/재로그인해도 계속 실패한다 —
+## error_details 의 expires_at(null=영구)·reason 으로 정지 안내를 띄울 것.
+const USER_BANNED := "USER_BANNED"
 const AUTH_PROVIDER_NOT_CONFIGURED := "AUTH_PROVIDER_NOT_CONFIGURED"
