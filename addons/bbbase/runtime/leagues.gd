@@ -38,7 +38,7 @@ func get_my_ranks_mine(league_id: String, limit := 30, offset := 0) -> BBBaseRes
 
 
 ## 내 지난 사이클 결과(승급 연출)를 본 뒤 확인 처리(seen=true) — 다음 조회부터 안 뜨게.
-## 승급 애니메이션을 보여준 직후 호출한다.
+## 승급 애니메이션을 보여준 직후 호출한다. 게임유저 토큰을 함께 보낸다(ack_result 참고).
 func ack_result_mine(league_id: String) -> BBBaseResult:
 	var uid := _require_user_id()
 	if uid == "":
@@ -74,9 +74,12 @@ func get_my_ranks_raw(league_id: String, entity_id: String, limit := 30, offset 
 
 
 ## 특정 엔티티의 지난 사이클 결과 확인 처리(seen=true). 결과 없으면 no-op. res.data = { acknowledged }.
+## 로그인 상태면 게임유저 토큰(Authorization: Bearer)을 함께 보낸다 — 서버가 user 리그에서
+## 경로 entity_id == 토큰 user_id 를 검사해 남의 결과를 확인 처리하지 못하게 한다(아니면 403 FORBIDDEN).
+## 로그인 전(토큰 없음)이면 헤더 없이 보낸다.
 func ack_result(league_id: String, entity_id: String) -> BBBaseResult:
 	var path := "/leagues/%s/me/%s/ack" % [league_id.uri_encode(), entity_id.uri_encode()]
-	return await _client.send_project("POST", path)
+	return await _client.send_project("POST", path, null, true)
 
 
 func _require_user_id() -> String:

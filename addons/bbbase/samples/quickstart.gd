@@ -3,7 +3,7 @@ extends Node
 ##
 ## 사용법:
 ## 1. 에디터 메뉴 BBBase ▸ Settings 로 res://bbbase_settings.tres 를 만들고
-##    base_url / project_id / api_key 를 채운다(dev: http://178.105.162.85:4001).
+##    base_url / project_id / api_key 를 채운다(dev: https://api-dev.bbbase.io).
 ## 2. 이 스크립트를 빈 씬의 루트 Node 에 붙이고 실행한다.
 ## 3. 출력(Output) 패널에서 왕복 로그를 확인한다.
 

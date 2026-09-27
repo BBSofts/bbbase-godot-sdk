@@ -11,7 +11,10 @@ const NOT_LOGGED_IN := "NOT_LOGGED_IN"
 
 # ── 서버 ──
 const UNKNOWN_COLUMN := "UNKNOWN_COLUMN"
+## user 외 entityType 인데 그 scope 의 스키마가 하나도 없음 — 운영자가 먼저 스키마를 정의해야 한다.
+const UNKNOWN_ENTITY_TYPE := "UNKNOWN_ENTITY_TYPE"
 const DUPLICATE_VALUE := "DUPLICATE_VALUE"
+const OPERATION_ID_CONFLICT := "OPERATION_ID_CONFLICT"
 const RECORD_NOT_FOUND := "RECORD_NOT_FOUND"
 const ENTITY_RECORD_NOT_FOUND := "ENTITY_RECORD_NOT_FOUND"
 const RATE_LIMIT_EXCEEDED := "RATE_LIMIT_EXCEEDED"
@@ -23,3 +26,12 @@ const FORBIDDEN := "FORBIDDEN"
 ## error_details 의 expires_at(null=영구)·reason 으로 정지 안내를 띄울 것.
 const USER_BANNED := "USER_BANNED"
 const AUTH_PROVIDER_NOT_CONFIGURED := "AUTH_PROVIDER_NOT_CONFIGURED"
+
+# ── 공유 카운터 ──
+## 그런 이름의 카운터가 없음 — 운영자가 먼저 대시보드/CLI 로 등록해야 한다.
+const COUNTER_NOT_FOUND := "COUNTER_NOT_FOUND"
+## 이 유저가 이번 구간에 더할 수 있는 총량을 다 썼다(429). 재시도하지 말고 UI 로 안내할 것 —
+## 다음 구간이 시작되기 전까지 계속 실패한다. error_details 에 perUserLimit / windowKey.
+const COUNTER_LIMIT_EXCEEDED := "COUNTER_LIMIT_EXCEEDED"
+## delta 가 카운터의 maxDelta 를 넘었다(0·음수도 불가 — 카운터는 올라가기만 한다).
+const INVALID_COUNTER_DELTA := "INVALID_COUNTER_DELTA"

@@ -28,6 +28,16 @@ func save_mine(data: Dictionary) -> BBBaseResult:
 	return await save("user", uid, data)
 
 
+## 거래 ID 로 한 번만 반영하는 내 레코드 저장. 같은 operation_id + 같은 data 재시도는
+## 첫 결과만 돌려준다(INCREMENT 재화 중복 지급 방지). operation_id 는 전송 전에 영구 저장해
+## 재시작 뒤에도 같은 값으로 재시도할 것. 같은 ID 에 다른 data 면 OPERATION_ID_CONFLICT(409).
+func save_mine_once(data: Dictionary, operation_id: String) -> BBBaseResult:
+	var uid := _require_user_id()
+	if uid == "":
+		return BBBaseResult.failure(BBBaseErrorCodes.NOT_LOGGED_IN, "로그인 후에 호출하세요(BBBase.auth.login_...).", 0)
+	return await save_once("user", uid, data, operation_id)
+
+
 ## 내 유저 레코드 조회(없으면 ok=true, data=null).
 func load_mine() -> BBBaseResult:
 	var uid := _require_user_id()
@@ -42,6 +52,12 @@ func load_mine() -> BBBaseResult:
 func save(entity_type: String, entity_id: String, data: Dictionary) -> BBBaseResult:
 	var path := "/entities/%s/%s/record" % [_esc(entity_type), _esc(entity_id)]
 	return await _client.send_project("PUT", path, {"data": data}, true)
+
+
+## 거래 ID 로 한 번만 반영하는 저장(PUT .../record/once). save_mine_once 참고.
+func save_once(entity_type: String, entity_id: String, data: Dictionary, operation_id: String) -> BBBaseResult:
+	var path := "/entities/%s/%s/record/once" % [_esc(entity_type), _esc(entity_id)]
+	return await _client.send_project("PUT", path, {"operationId": operation_id, "data": data}, true)
 
 
 ## 레코드 조회. 없으면 ok=true, data=null(RECORD_NOT_FOUND/404 를 흡수).

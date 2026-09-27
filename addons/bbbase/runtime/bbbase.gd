@@ -38,6 +38,7 @@ var leagues: BBBaseLeagues
 var mails: BBBaseMails
 var logs: BBBaseLogs
 var config: BBBaseConfig
+var counters: BBBaseCounters
 
 var _client: BBBaseClient
 var _session: BBBaseSession
@@ -90,6 +91,7 @@ func init_with(s: BBBaseSettings) -> void:
 	mails = BBBaseMails.new(_client, _session)
 	logs = BBBaseLogs.new(_client)
 	config = BBBaseConfig.new(_client)
+	counters = BBBaseCounters.new(_client, _session)
 
 	if s.verbose_logging:
 		print("[BBBase] initialized. env=%s, project=%s, restoredSession=%s" % [s.active_environment_name(), s.active_project_id(), _session.is_logged_in()])
